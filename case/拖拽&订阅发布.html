@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+            div {
+				font-size: 30px;
+				text-align: center;
+
+			}
+			#box1 {
+				width: 100px;
+				height: 100px;
+				background: red;
+				position: absolute;
+				top: 0;
+				left: 300px;
+			}
+			#box2 {
+				width: 100px;
+				height: 100px;
+				background: yellow;
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+			#box3 {
+				width: 500px;
+				height: 30px;
+				border: 1px solid #000;
+				position: relative;
+				margin-top: 120px;
+			}
+			#box4 {
+				width: 100px;
+				height: 100px;
+				border: 1px solid #000;
+				position: absolute;
+				left: 0;
+				top: 300px;
+				background: blue;
+                user-select: none;
+			}
+			#bar {
+				width: 30px;
+				height: 100%;
+				background: blue;
+				position: absolute;
+				left: 0;
+				top: 0;
+			}
+</style>
+<script src="./release.js"></script>
+<script>
+    class Drag extends Release{
+        constructor(dragbox){
+            super();
+            this.dragbox = dragbox;
+            this.dragInit();
+        }
+        dragInit(){
+            this.dragbox.onmousedown = this.downFn.bind(this);
+        }
+        downFn(ev){
+            this.disX = ev.clientX - this.dragbox.offsetLeft;
+            this.disY = ev.clientY - this.dragbox.offsetTop;
+
+            // 在down的时候发布一个事件
+            this.emit('custom-down');
+
+            document.onmousemove = this.moveFn.bind(this);
+            document.onmouseup = this.upFn.bind(this);
+
+            ev.preventDefault();
+        }
+        moveFn(ev){
+            this.left = ev.clientX - this.disX;
+            this.top = ev.clientY - this.disY;
+
+            // 发布事件用来限制范围
+            this.emit('custom-limt');
+
+            this.emit('custom-move', ev);
+
+            this.dragbox.style.left = `${this.left}px`;
+            this.dragbox.style.top = `${this.top}px`;
+        }
+        upFn(){
+            document.onmousemove = document.onmouseup = null;
+            this.emit('custom-up');
+        }
+    }
+</script>
+</head>
+<body>
+    <div id="box2"></div>
+    <div id="box3">
+        <div id="bar"></div>
+    </div>
+    <div id="box4">box4</div>
+</body>
+<script>
+    let bar = document.getElementById('bar');
+    let box2 = document.getElementById('box2');
+    let d1 = new Drag(bar);
+
+    // 拖拽过程中限定范围
+    d1.on('custom-limt', function(){
+        d1.top = 0;
+        if(d1.left < 0){
+            d1.left = 0;
+        }
+    })
+
+    d1.on('custom-move', function(ev){
+        box2.style.left = `${this.dragbox.offsetLeft}px`;
+    });
+
+    let box4 = document.getElementById('box4');
+    let d2 = new Drag(box4);
+
+    d2.on('custom-limt', function(){
+        if(d2.left < 0){
+            d2.left = 0;
+        }
+        if(d2.top < 0){
+            d2.top = 0;
+        }
+    });
+
+    d2.on('custom-down', function(){
+        box4.style.backgroundColor = 'red';
+    });
+
+    d2.on('custom-up', function(){
+        box4.style.backgroundColor = 'green';
+    });
+
+</script>
+</html>

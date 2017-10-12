@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>01-Subscribe-to-release</title>
+</head>
+<body>
+    <input type="button" value="订阅发布" id="btn">
+</body>
+<script>
+    // 发布中心
+    class Release {
+        constructor(){
+            // 订阅者信息存储库
+            this._releaseInfos = [];
+        }
+        on(listener){
+            // 把订阅者信息存储起来
+            this._releaseInfos.push(listener);
+        }
+        // 发送订阅信息给订阅者
+        emit(){
+            this._releaseInfos.forEach((releaseInfo, i) => {
+                releaseInfo();
+            });
+        }
+        //取消订阅
+        off(listener){
+            let releaseInfos = this._releaseInfos;
+            let len = releaseInfos.length;
+            for(let i=0; i<len; i++){
+                if(releaseInfos[i] === listener){
+                    releaseInfos.splice(i, 1);
+                }
+            }
+        }
+    }
+
+    let product = new Release();
+
+    function Fn1(){
+        console.log("通知了小明");
+    }
+
+    function Fn2(){
+        console.log("通知了小红");
+    }
+
+    product.on(Fn1);
+    product.on(Fn2);
+
+    product.off(Fn2);
+
+    var oBtn = document.querySelector('#btn');
+
+    oBtn.onclick = function(){
+        product.emit();
+    }
+
+</script>
+</html>

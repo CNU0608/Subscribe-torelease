@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>03-Subscribe-to-release</title>
+</head>
+<body>
+    <input type="button" value="订阅发布" id="btn">
+</body>
+<script>
+    // 发布中心
+    class Release {
+        constructor(){
+            // 订阅者信息存储库
+            this._releaseInfos = {};
+            /*
+                {
+                    type1: [listener1, listener2],
+                    type2: [listener1, listener2]
+                }
+            */
+        }
+        on(type, listener){
+            let releaseInfos= this._releaseInfos[type];
+
+            // 没有订阅类型记录先创建一个数组
+            if(!releaseInfos){
+                this._releaseInfos[type] = [];
+            }
+
+            // 把订阅者信息存储起来
+            this._releaseInfos[type].push(listener);
+        }
+        // 发送订阅信息给订阅者
+        emit(type, ...args){
+            let releaseInfos = this._releaseInfos[type];
+
+            // 判断订阅type上又没订阅者信息，有就发送订阅信息
+            if(releaseInfos && Array.isArray(releaseInfos)){
+                releaseInfos.forEach((releaseInfo) => {
+                    releaseInfo.apply(this, args);
+                });
+            }
+
+            
+        }
+        //取消订阅
+        off(type, listener){
+            let releaseInfos = this._releaseInfos[type];
+            let len = releaseInfos.length;
+            for(let i=0; i<len; i++){
+                if(releaseInfos[i] === listener){
+                    releaseInfos.splice(i, 1);
+                }
+            }
+        }
+    }
+
+    let product = new Release();
+
+    function Fn1(...args){
+        console.log("通知了小明");
+        console.log(args);
+    }
+
+    function Fn2(){
+        console.log("通知了小红");
+    }
+
+    product.on('computer',Fn1);
+    product.on('watch', Fn2);
+
+    product.off('watch', Fn2);
+
+    var oBtn = document.querySelector('#btn');
+
+    oBtn.onclick = function(){
+        product.emit('computer', '你要的电脑有货了，赶紧过来购买吧！', '带上你的学生证，有优惠哦！');
+        product.emit('watch');
+    }
+
+</script>
+</html>
